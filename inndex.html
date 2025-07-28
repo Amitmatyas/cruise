@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSC Seaview - החופשה שלכם</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚢</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS resets and variables */
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&family=Rubik:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #007bff; /* כחול בסיסי */
+            --secondary-color: #e6f2ff; /* רקע בהיר */
+            --accent-color: #ff5722; /* כתום דגש */
+            --text-color: #333; /* צבע טקסט כהה */
+            --light-text-color: #666; /* צבע טקסט בהיר יותר */
+            --white: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-strong: rgba(0, 0, 0, 0.25);
+
+            --header-height-expanded: 120px;
+            --header-height-collapsed: 65px;
+            --header-logo-max-width-expanded: 200px;
+            --header-logo-max-width-collapsed: 100px;
+            --header-shadow-height: 10px;
+
+            --border-radius-base: 12px;
+            --padding-base: 25px;
+            --gap-base: 20px;
+
+            --transition-speed: 0.4s;
+            --transition-ease: ease-in-out;
+            --pop-in-delay: 0.2s;
+        }
+
+        /* Base styles */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            text-align: right;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+            pointer-events: all;
+            overflow: hidden;
+        }
+
+        #loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo-container {
+            width: 80%;
+            max-width: 300px;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in-out;
+            animation-delay: 0.5s;
+            animation-fill-mode: forwards;
+            opacity: 0;
+        }
+
+        .loading-logo {
+            width: 100%;
+            height: auto;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px; /* Base height */
+            background: rgba(255, 255, 255, 0.2);
+            animation: wave-animation 3s infinite linear;
+            transform: translateY(100%);
+            opacity: 0;
+            animation: wave-entry 1s ease-out forwards;
+            animation-delay: 1s;
+        }
+
+        .wave.wave1 { animation-delay: 1s; z-index: 10; height: 120px; background: rgba(255, 255, 255, 0.3); }
+        .wave.wave2 { animation-delay: 1.2s; z-index: 20; height: 100px; background: rgba(255, 255, 255, 0.2); }
+        .wave.wave3 { animation-delay: 1.4s; z-index: 30; height: 80px; background: rgba(255, 255, 255, 0.1); }
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes wave-entry {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0%); opacity: 1; }
+        }
+
+        @keyframes wave-animation {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 0; } /* Adjust based on wave shape */
+        }
+        .wave {
+            background-repeat: repeat-x;
+            background-size: 200px 100%; /* Adjust wave length/height */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><path fill="%23fff" d="M0,50 C50,0 150,100 200,50 L200,100 L0,100 Z"/></svg>'); /* Simple wave SVG */
+        }
+
+
+        /* Welcome Screen */
+        #welcome-screen {
+            display: none; /* Hidden by default, shown by JS */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9998;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #welcome-screen.show {
+            opacity: 1;
+            display: flex;
+        }
+
+        #welcome-screen h1 {
+            font-family: 'Rubik', sans-serif;
+            font-size: 3.5em;
+            margin-bottom: var(--gap-base);
+            animation: popIn 0.8s forwards ease-out;
+            animation-delay: 0.5s;
+            opacity: 0;
+        }
+
+        #welcome-screen p {
+            font-size: 1.4em;
+            margin-bottom: var(--gap-base) * 2;
+            animation: fadeIn 0.8s forwards ease-out;
+            animation-delay: 0.8s;
+            opacity: 0;
+        }
+
+        #welcome-screen button {
+            background-color: var(--accent-color);
+            color: var(--white);
+            border: none;
+            padding: 18px 40px;
+            border-radius: var(--border-radius-base);
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px var(--shadow-medium);
+            animation: popIn 0.8s forwards ease-out;
+            animation-delay: 1.1s;
+            opacity: 0;
+        }
+
+        #welcome-screen button:hover {
+            background-color: #e04e1c;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 15px var(--shadow-strong);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Header styles */
+        #main-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--white);
+            z-index: 1000;
+            transition: height var(--transition-speed) var(--transition-ease),
+                        box-shadow var(--transition-speed) var(--transition-ease);
+            height: var(--header-height-expanded);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px var(--shadow-light);
+        }
+
+        #main-header.collapsed {
+            height: var(--header-height-collapsed);
+            box-shadow: 0 2px 8px var(--shadow-medium);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            max-width: var(--header-logo-max-width-expanded);
+            height: auto;
+            transition: max-width var(--transition-speed) var(--transition-ease);
+            padding: 8px; /* Visual padding for logo */
+            cursor: pointer;
+        }
+
+        #main-header.collapsed .logo {
+            max-width: var(--header-logo-max-width-collapsed);
+        }
+
+        .header-shadow-effect {
+            position: fixed;
+            top: var(--header-height-expanded); /* Initial position below expanded header */
+            left: 0;
+            width: 100%;
+            height: var(--header-shadow-height);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
+            z-index: 999;
+            transition: top var(--transition-speed) var(--transition-ease);
+        }
+
+        #main-header.collapsed + .header-shadow-effect {
+            top: var(--header-height-collapsed); /* Move up with collapsed header */
+        }
+
+        /* Main content padding for fixed header */
+        .content {
+            padding-top: calc(var(--header-height-expanded) + var(--padding-base));
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: var(--padding-base);
+            padding-right: var(--padding-base);
+            box-sizing: border-box;
+            opacity: 0; /* Hidden initially for fade-in */
+            transform: translateY(20px);
+            animation: fadeInScaleUp 0.8s forwards var(--transition-ease);
+            animation-delay: var(--pop-in-delay);
+            flex-grow: 1; /* Make main content fill available space */
+        }
+
+        @keyframes fadeInScaleUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Popup message styles */
+        .popup-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: var(--white);
+            border: 1px solid #ddd;
+            box-shadow: 0 6px 18px var(--shadow-medium);
+            padding: var(--padding-base) * 1.2;
+            border-radius: var(--border-radius-base);
+            z-index: 1001;
+            text-align: center;
+            opacity: 0;
+            transition: all 0.3s var(--transition-ease);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .popup-message.show {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .popup-message p {
+            margin-bottom: var(--gap-base);
+            font-size: 1.25em;
+            font-weight: bold;
+            color: var(--primary-color);
+            line-height: 1.4;
+        }
+
+        .popup-message button {
+            background-color: var(--accent-color);
+            color: var(--white);
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius-base);
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px var(--shadow-light);
+        }
+
+        .popup-message button:hover {
+            background-color: #e04e1c;
+            transform: translateY(-2px);
+        }
+
+        /* Section styling */
+        section {
+            background-color: var(--white);
+            padding: var(--padding-base);
+            margin-bottom: var(--gap-base) * 1.5;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            transition: transform 0.3s var(--transition-ease), box-shadow 0.3s var(--transition-ease);
+            position: relative;
+            overflow: hidden;
+            text-align: center; /* Center content within sections by default */
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-medium);
+        }
+
+        section h2 {
+            font-family: 'Rubik', sans-serif;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: var(--gap-base);
+            font-size: 2.2em;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            position: relative;
+            display: inline-block; /* For centering the underline */
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            left: 0;
+            margin: auto;
+            bottom: -2px;
+            width: 50px;
+            height: 2px;
+            background-color: var(--accent-color);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: var(--gap-base) * 1.5 0;
+        }
+
+        /* Button styling */
+        .room-buttons-container, .menu-buttons-container, .entitlements-filter-buttons {
+            display: grid;
+            gap: var(--gap-base);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            margin-bottom: var(--gap-base);
+        }
+
+        .room-button, .menu-button, .entitlements-filter-buttons button, #launch-app-button, #confirm-room-selection {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 18px 25px;
+            border-radius: var(--border-radius-base);
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-button:hover, .menu-button:hover, .entitlements-filter-buttons button:hover, #launch-app-button:hover, #confirm-room-selection:not([disabled]):hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px var(--shadow-medium);
+        }
+
+        .room-button.selected {
+            background-color: #28a745;
+            border: 3px solid #1e7e34;
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .room-button.selected:hover {
+            background-color: #218838;
+            transform: scale(1.05) translateY(-3px);
+        }
+
+        #confirm-room-selection {
+            background-color: #28a745;
+            margin-top: var(--gap-base);
+        }
+
+        #confirm-room-selection:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Ripple effect for buttons */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            animation: ripple-animation 0.6s linear forwards;
+            transform: scale(0);
+        }
+
+        @keyframes ripple-animation {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .room-name-display {
+            font-weight: bold;
+            font-size: 1.35em;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        #selected-room-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border-radius: var(--border-radius-base);
+            margin-top: var(--gap-base);
+            color: var(--primary-color);
+            border: 1px solid #cce0ff;
+            box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            animation: fadeInScaleUp 0.6s forwards var(--transition-ease);
+            animation-delay: var(--pop-in-delay);
+        }
+
+        .hidden-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s var(--transition-ease), transform 0.5s var(--transition-ease);
+        }
+
+        .visible-section {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Entitlements content styling */
+        .entitlements-header {
+            text-align: center;
+            margin-bottom: var(--gap-base) * 1.5;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        .entitlements-header h3 {
+            font-family: 'Rubik', sans-serif;
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin: 0;
+        }
+        .entitlements-header p {
+            font-size: 1.1em;
+            color: var(--light-text-color);
+            margin: 5px 0 0;
+        }
+
+        #entitlements-content ul {
+            list-style: none;
+            padding: 0;
+            margin-top: var(--gap-base);
+            text-align: right; /* Ensure list items are RTL */
+        }
+
+        #entitlements-content ul li {
+            margin-bottom: 12px;
+            padding-right: 35px;
+            position: relative;
+            font-size: 1.05em;
+            color: var(--light-text-color);
+            animation: listItemFadeIn 0.5s forwards var(--transition-ease);
+            opacity: 0;
+        }
+
+        @keyframes listItemFadeIn {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        #entitlements-content ul li::before {
+            content: '🛳️';
+            color: var(--accent-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 1.5em;
+            margin-right: -1.5em;
+            position: absolute;
+            right: 0;
+            font-size: 1.1em;
+        }
+
+        #entitlements-content h3 {
+            font-family: 'Rubik', sans-serif;
+            color: var(--text-color);
+            margin-top: var(--gap-base) * 1.5;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            font-size: 1.6em;
+            color: var(--primary-color);
+            text-align: right; /* Ensure sub-headings are RTL */
+            display: block; /* Override inline-block from section h2 */
+        }
+
+        #entitlements-content p {
+            margin-bottom: 10px;
+            color: var(--light-text-color);
+            font-size: 1.05em;
+            text-align: right;
+        }
+
+        /* Room Map styling */
+        .room-map-content {
+            text-align: center;
+            padding-top: var(--gap-base);
+        }
+
+        .room-map-content img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: var(--gap-base);
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 4px 10px var(--shadow-light);
+            transition: transform 0.3s ease;
+        }
+
+        .room-map-content img:hover {
+            transform: scale(1.02);
+        }
+
+        .room-map-content video {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 4px 10px var(--shadow-light);
+            transition: transform 0.3s ease;
+        }
+
+        .room-map-content video:hover {
+            transform: scale(1.02);
+        }
+
+        /* 360 Tour styling */
+        .tour-360-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 4px 15px var(--shadow-medium);
+        }
+
+        .tour-360-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Entrance Tickets styling */
+        #launch-app-button {
+            width: fit-content;
+            margin: var(--gap-base) * 1.5 auto;
+            display: block;
+            background-color: var(--accent-color);
+        }
+
+        #launch-app-button:hover {
+            background-color: #e04e1c;
+        }
+
+        /* Scroll to top button */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 30px;
+            left: 30px; /* Position on the left for RTL */
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.8em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px var(--shadow-medium);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease;
+            z-index: 900;
+        }
+
+        #scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-5px);
+        }
+        #scroll-to-top:hover {
+            background-color: #0056b3;
+            transform: translateY(-8px) scale(1.05);
+        }
+
+        /* Navigation dots */
+        #nav-dots {
+            position: fixed;
+            left: 30px; /* Position on the left for RTL */
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 950;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            opacity: 0; /* Hidden initially */
+            transition: opacity 0.5s ease;
+        }
+        #nav-dots.show {
+            opacity: 1;
+        }
+
+        .nav-dot {
+            width: 15px;
+            height: 15px;
+            background-color: #ccc;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .nav-dot:hover {
+            background-color: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        }
+        .nav-dot.active {
+            background-color: var(--accent-color);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 87, 34, 0.6);
+            border: 2px solid var(--primary-color);
+        }
+        .nav-dot .tooltip {
+            visibility: hidden;
+            width: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            left: 170%; /* Position to the right of the dot */
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        .nav-dot:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .nav-dot .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 100%; /* Arrow on the left */
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.7) transparent transparent;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            :root {
+                --header-height-expanded: 100px;
+                --header-height-collapsed: 55px;
+                --header-logo-max-width-expanded: 160px;
+                --header-logo-max-width-collapsed: 80px;
+                --padding-base: 15px;
+                --gap-base: 15px;
+            }
+
+            .content {
+                padding-top: calc(var(--header-height-expanded) + var(--padding-base));
+            }
+
+            section h2 {
+                font-size: 1.8em;
+            }
+
+            .room-button, .menu-button, .entitlements-filter-buttons button, #launch-app-button, #confirm-room-selection {
+                padding: 15px 20px;
+                font-size: 1.1em;
+            }
+
+            .room-name-display {
+                font-size: 1.2em;
+            }
+
+            .popup-message {
+                width: 90%;
+                padding: var(--padding-base);
+            }
+
+            .popup-message p {
+                font-size: 1.1em;
+            }
+
+            #scroll-to-top {
+                bottom: 20px;
+                left: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.5em;
+            }
+
+            #nav-dots {
+                left: 15px; /* Adjust for smaller screens */
+                gap: 10px;
+                padding: 8px;
+            }
+            .nav-dot {
+                width: 12px;
+                height: 12px;
+            }
+            .nav-dot .tooltip {
+                left: 150%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loading-logo-container">
+            <img src="https://logos-world.net/wp-content/uploads/2022/09/MSC-Cruise-Logo.png" alt="MSC Cruise Logo" class="loading-logo">
+        </div>
+        <div class="wave wave1"></div>
+        <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
+    </div>
+
+    <div id="welcome-screen">
+        <h1>ברוכים הבאים לטיול בר המצווה של עמית ועומר!</h1>
+        <p>באתר זה יהיה לכם כאן את כל הפרטים שאתם צריכים לחופשה בלתי נשכחת.</p>
+        <button id="start-journey-button">יאללה נתקדם!</button>
+    </div>
+
+    <header id="main-header">
+        <div class="logo-container">
+            <a href="#home"> <img src="https://logos-world.net/wp-content/uploads/2022/09/MSC-Cruise-Logo.png" alt="MSC Cruise Logo" class="logo">
+            </a>
+        </div>
+    </header>
+
+    <div class="header-shadow-effect"></div>
+
+    <div id="popup-message" class="popup-message">
+        <p id="popup-text"></p>
+        <button id="close-popup">הבנתי</button>
+    </div>
+
+    <main class="content">
+        <section id="room-selection">
+            <h2 id="room-selection-title">בחירת חדר</h2>
+            <p id="room-selection-instruction">אנא בחרו את החדר שלכם. בחירה זו היא חד פעמית ולא ניתנת לשינוי לאחר האישור.</p>
+            <div class="room-buttons-container" id="room-selection-buttons-container">
+                <button class="room-button" data-room-id="1" data-room-type="A">
+                    <span class="room-name-display" id="room-name-1"></span>
+                </button>
+                <button class="room-button" data-room-id="2" data-room-type="A">
+                    <span class="room-name-display" id="room-name-2"></span>
+                </button>
+                <button class="room-button" data-room-id="3" data-room-type="B">
+                    <span class="room-name-display" id="room-name-3"></span>
+                </button>
+                <button class="room-button" data-room-id="4" data-room-type="B">
+                    <span class="room-name-display" id="room-name-4"></span>
+                </button>
+            </div>
+            <button id="confirm-room-selection" disabled>אשר בחירת חדר</button>
+            <p id="selected-room-display">החדר שבחרת: <span id="current-selected-room-name">טרם נבחר</span></p>
+        </section>
+
+        ---
+
+        <section id="main-menu" class="hidden-section">
+            <h2>תפריט</h2>
+            <div class="menu-buttons-container">
+                <button class="menu-button" data-section="entitlements">זכאויות</button>
+                <button class="menu-button" data-section="room-map">מפת החדר</button>
+                <button class="menu-button" data-section="tour-360">סיור 360 באונייה</button>
+                <button class="menu-button" data-section="entrance-tickets" id="entrance-tickets-button">כרטיסי כניסה</button>
+            </div>
+        </section>
+
+        ---
+
+        <section id="entitlements-section" class="hidden-section">
+            <h2 id="entitlements-main-title">זכאויות</h2>
+            <div class="entitlements-header">
+                <h3 id="entitlements-room-name-display">סוג חדר: [שם החדר]</h3>
+                <p>ספינה: MSC Seaview</p>
+                <p>חבילה: Fantastica</p>
+            </div>
+            <div class="entitlements-filter-buttons" id="entitlements-filter-buttons">
+                </div>
+            <div id="entitlements-content">
+                </div>
+        </section>
+
+        <section id="room-map-section" class="hidden-section">
+            <h2>מפת החדר</h2>
+            <div class="room-map-content">
+                <p>מקום לתמונות וסרטון. (הקישורים לקבצים יהיו משרת)</p>
+                <img src="https://via.placeholder.com/600x400?text=Room+Image+1" alt="תמונה של החדר 1">
+                <img src="https://via.placeholder.com/600x400?text=Room+Image+2" alt="תמונה של החדר 2">
+                <video controls>
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    הדפדפן שלך אינו תומך בוידאו.
+                </video>
+            </div>
+        </section>
+
+        <section id="tour-360-section" class="hidden-section">
+            <h2>סיור 360 באונייה</h2>
+            <div class="tour-360-container">
+                <iframe src="https://virtual-tours.msccruises.com/MSC-seaview/en-gb/index.html" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <section id="entrance-tickets-section" class="hidden-section">
+            <h2>כרטיסי כניסה</h2>
+            <p>לחצו על הכפתור כדי לגשת לאפליקציית MSC For Me או להוריד אותה:</p>
+            <button id="launch-app-button">גישה לאפליקציה / חנות האפליקציות</button>
+        </section>
+    </main>
+
+    <button id="scroll-to-top" title="חזור למעלה">↑</button>
+
+    <div id="nav-dots">
+        </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainHeader = document.getElementById('main-header');
+            const content = document.querySelector('.content');
+            const roomButtons = document.querySelectorAll('.room-button');
+            const selectedRoomDisplay = document.getElementById('current-selected-room-name');
+            const roomSelectionTitle = document.getElementById('room-selection-title');
+            const menuButtons = document.querySelectorAll('.menu-button');
+            const sections = document.querySelectorAll('section');
+            const entitlementsSection = document.getElementById('entitlements-section');
+            const entitlementsContent = document.getElementById('entitlements-content');
+            const entitlementsFilterButtonsContainer = document.getElementById('entitlements-filter-buttons');
+            const entitlementsRoomNameDisplay = document.getElementById('entitlements-room-name-display');
+            const entranceTicketsButton = document.getElementById('entrance-tickets-button');
+            const launchAppButton = document.getElementById('launch-app-button');
+            const roomSelectionSection = document.getElementById('room-selection');
+            const roomSelectionButtonsContainer = document.getElementById('room-selection-buttons-container');
+            const confirmRoomSelectionButton = document.getElementById('confirm-room-selection');
+            const roomSelectionInstruction = document.getElementById('room-selection-instruction');
+
+
+            // Loading & Welcome Screen elements
+            const loadingScreen = document.getElementById('loading-screen');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const startJourneyButton = document.getElementById('start-journey-button');
+
+            // Scroll to top & Nav dots
+            const scrollToTopButton = document.getElementById('scroll-to-top');
+            const navDotsContainer = document.getElementById('nav-dots');
+            const mainSections = Array.from(document.querySelectorAll('section')).filter(s => !s.id.includes('-section') || s.id === 'room-selection' || s.id === 'main-menu'); // Sections for nav dots
+
+            // Popup message elements
+            const popupMessage = document.getElementById('popup-message');
+            const popupText = document.getElementById('popup-text');
+            const closePopup = document.getElementById('close-popup');
+
+            let selectedRoomId = localStorage.getItem('selectedRoomId');
+            let isRoomConfirmed = localStorage.getItem('isRoomConfirmed') === 'true';
+
+            // Room data (no A/B types visible to user, only for internal logic)
+            const roomNamesOrdered = {
+                1: 'אבי ועמית',
+                2: 'אלי ועומר',
+                3: 'אורלי, מעיין ושיר',
+                4: 'רויטל, יעל ועידן'
+            };
+
+            const roomNamesArranged = {
+                1: 'עומר ועמית',
+                2: 'יעל ומעיין',
+                3: 'אורלי, אבי ושיר',
+                4: 'רויטל, אלי ועידן'
+            };
+
+            // Internal mapping for room types A/B based on ID
+            const roomTypeMapping = {
+                1: 'A',
+                2: 'A',
+                3: 'B',
+                4: 'B'
+            };
+
+            // Entitlements data based on internal room type
+            const entitlementsData = {
+                'A': {
+                    'overview': `
+                        <p>חבילת Fantastica מציעה גמישות ונוחות עם מגוון שירותים ופעילויות כדי להפוך את השייט שלכם למהנה במיוחד. חשוב לציין שהמידע שלהלן מתייחס למה שכלול בחינם ומה דורש תשלום נוסף.</p>
+                    `,
+                    'free': `
+                        <h3>מה כלול בחינם</h3>
+                        <ul>
+                            <li><strong>בחירת תא:</strong> אפשרות לבחור את מיקום התא שלך באונייה (בכפוף לזמינות).</li>
+                            <li><strong>ארוחות:</strong>
+                                <ul>
+                                    <li><strong>מסעדות ראשיות:</strong> תוכלו ליהנות מארוחות בוקר, צהריים וערב מלאות במסעדות הראשיות של האונייה, כמו Golden Sand ו-Silver Dolphin, המגישות מנות מתפריט עם שירות מלצרים.</li>
+                                    <li><strong>מזנון:</strong> לרשותכם המזנון המרכזי, Marketplace Buffet, הפתוח כמעט 20 שעות ביממה. הוא מציע מגוון רחב של מאכלים בסגנון בופה, כולל פיצות טריות הנאפות במקום, פסטות, סלטים ומנות בינלאומיות מתחלפות.</li>
+                                </ul>
+                            </li>
+                            <li><strong>שירות חדרים:</strong> ארוחת בוקר קונטיננטלית (בסיסית) זמינה בתא שלכם עם משלוח חינם.</li>
+                            <li><strong>גמישות:</strong> אפשרות לבצע שינוי אחד בתאריך או ביעד השייט (בכפוף לתנאים).</li>
+                            <li><strong>בידור ופעילויות:</strong>
+                                <ul>
+                                    <li><strong>מופעים:</strong> הופעות בסגנון ברודוויי בתיאטרון Metropolitan.</li>
+                                    <li><strong>בריכות:</strong> גישה לכל אזורי הבריכה (South Beach, Seaview, Panoramic).</li>
+                                    <li><strong>פארק מים:</strong> שימוש בפארק המים "Forest Aquaventure Park" (למעט אומגה).</li>
+                                    <li><strong>חדר כושר:</strong> גישה לחדר הכושר המאובזר (MSC Gym).</li>
+                                    <li><strong>פעילויות ספורט:</strong> מתקני ספורט באוויר הפתוח (כדורסל, כדורגל, כדורעף) ומסלול ריצה.</li>
+                                    <li><strong>ילדים ונוער:</strong> פעילויות ומועדונים מותאמים לכל הגילאים (Doremi Land).</li>
+                                </ul>
+                            </li>
+                            <li><strong>הנחות:</strong>
+                                <ul>
+                                    <li>50% הנחה על שיעורי כושר פרטיים.</li>
+                                    <li>20% הנחה על חבילות למסעדות מיוחדות בתשלום מראש.</li>
+                                    <li>10% הנחה על טיפולי ספא שנרכשים על האונייה.</li>
+                                </ul>
+                            </li>
+                            <li><strong>נקודות מועדון:</strong> צבירת נקודות למועדון MSC Voyagers Club.</li>
+                            <li><strong>משקאות בסיסיים:</strong> מים (במזנון, בברים נבחרים ובמסעדות ראשיות עם הארוחות) וקפה פילטר/רגיל ותה (במזנון ובמסעדות הראשיות).</li>
+                        </ul>
+                    `,
+                    'paid': `
+                        <h3>מה כלול בתשלום נוסף</h3>
+                        <ul>
+                            <li><strong>משקאות:</strong> כל שאר המשקאות, לרבות קפה מיוחד (כמו אספרסו), מיצים סחוטים טריים, משקאות קלים (כמו קולה), וכל סוגי האלכוהול, אינם כלולים ודורשים תשלום נוסף, אלא אם תרכשו חבילת שתייה ייעודית.</li>
+                            <li><strong>מסעדות מיוחדות (Specialty Restaurants):</strong>
+                                <ul>
+                                    <li>Butcher's Cut: סטייק האוס.</li>
+                                    <li>Ocean Cay Restaurant: מסעדת פירות ים.</li>
+                                    <li>Pan Asian Market Kitchen by Roy Yamaguchi: מסעדה אסייתית (סושי, טפניאקי, פיוז'ן).</li>
+                                    <li>Bistrot La Bohème: ביסטרו צרפתי.</li>
+                                    <li>Venchi 1878 Chocolate Bar: שוקולדים וגלידות.</li>
+                                </ul>
+                            </li>
+                            <li><strong>שירותים בתא:</strong> פריטים מהמיני בר, שיחות טלפון.</li>
+                            <li><strong>אינטרנט:</strong> חיבור Wi-Fi.</li>
+                            <li><strong>ספא:</strong> כניסה לאזור התרמי בספא וטיפולי ספא (למעט הנחה).</li>
+                            <li><strong>אטרקציות מסוימות:</strong> אומגה, באולינג, סימולטור F1, קולנוע XD.</li>
+                            <li><strong>שירותי כביסה.</strong></li>
+                            <li><strong>טיפים לצוות (Service Charges):</strong> תשלום יומי.</li>
+                            <li><strong>טיולים בחוף:</strong> טיולים מאורגנים על ידי MSC ביעדי העצירה.</li>
+                        </ul>
+                    `,
+                    'room_details': `
+                        <h3>פרטי חדר Deluxe Interior</h3>
+                        <p>החדר מיועד להיות נוח ומצויד היטב:</p>
+                        <ul>
+                            <li><strong>מיטות:</strong> מיטה זוגית שניתנת להפרדה לשתי יחיד.</li>
+                            <li><strong>אחסון:</strong> ארון בגדים ומקום אחסון.</li>
+                            <li><strong>חדר רחצה:</strong> פרטי עם מקלחת ומייבש שיער.</li>
+                            <li><strong>אמצעי בידור:</strong> טלוויזיה אינטראקטיבית.</li>
+                            <li><strong>תקשורת:</strong> טלפון פנימי.</li>
+                            <li><strong>נוחות:</strong> מיני בר (בתשלום), כספת, מיזוג אוויר עם שליטה אישית.</li>
+                        </ul>
+                    `,
+                    'dining': `
+                        <h3>אפשרויות סעודה</h3>
+                        <ul>
+                            <li><strong>מסעדות ראשיות (כלול):</strong> Golden Sand ו-Silver Dolphin - ארוחות בוקר, צהריים וערב מלאות עם שירות מלצרים.</li>
+                            <li><strong>מזנון מרכזי (כלול):</strong> Marketplace Buffet - פתוח כמעט 20 שעות ביממה, מגוון רחב של מאכלים בסגנון בופה, פיצות טריות, פסטות, סלטים ומנות בינלאומיות.</li>
+                            <li><strong>שירות חדרים (ארוחת בוקר קונטיננטלית חינם, שאר התפריט בתשלום).</strong></li>
+                            <li><strong>מסעדות מיוחדות (בתשלום):</strong> Butcher's Cut (סטייק האוס), Ocean Cay Restaurant (פירות ים), Pan Asian Market Kitchen (אסייתית), Bistrot La Bohème (צרפתי).</li>
+                        </ul>
+                    `,
+                    'entertainment': `
+                        <h3>בידור ופעילויות</h3>
+                        <ul>
+                            <li><strong>מופעים:</strong> הופעות בסגנון ברודוויי בתיאטרון Metropolitan (כלול).</li>
+                            <li><strong>בריכות:</strong> גישה לכל אזורי הבריכה (South Beach, Seaview, Panoramic) (כלול).</li>
+                            <li><strong>פארק מים:</strong> שימוש בפארק המים "Forest Aquaventure Park" (למעט אומגה) (כלול).</li>
+                            <li><strong>חדר כושר:</strong> גישה לחדר הכושר המאובזר (MSC Gym) (כלול).</li>
+                            <li><strong>פעילויות ספורט:</strong> מתקני ספורט באוויר הפתוח (כדורסל, כדורגל, כדורעף) ומסלול ריצה (כלול).</li>
+                            <li><strong>ילדים ונוער:</strong> פעילויות ומועדונים מותאמים לכל הגילאים (Doremi Land) (כלול).</li>
+                            <li><strong>אטרקציות בתשלום:</strong> אומגה, באולינג, סימולטור F1, קולנוע XD.</li>
+                        </ul>
+                    `,
+                    'spa_fitness': `
+                        <h3>ספא וכושר</h3>
+                        <ul>
+                            <li><strong>חדר כושר (כלול):</strong> גישה לחדר הכושר המאובזר (MSC Gym).</li>
+                            <li><strong>שיעורי כושר פרטיים:</strong> 50% הנחה.</li>
+                            <li><strong>טיפולי ספא:</strong> 10% הנחה על טיפולים הנרכשים על האונייה.</li>
+                            <li><strong>כניסה לאזור התרמי בספא:</strong> בתשלום נוסף.</li>
+                        </ul>
+                    `,
+                    'internet_communication': `
+                        <h3>אינטרנט ותקשורת</h3>
+                        <ul>
+                            <li><strong>Wi-Fi:</strong> בתשלום נוסף.</li>
+                            <li><strong>שיחות טלפון:</strong> בתשלום נוסף.</li>
+                        </ul>
+                    `
+                },
+                'B': {
+                    'overview': `
+                        <p>חבילת Fantastica מציעה גמישות ונוחות עם מגוון שירותים ופעילויות כדי להפוך את השייט שלכם למהנה במיוחד. חשוב לציין שהמידע שלהלן מתייחס למה שכלול בחינם ומה דורש תשלום נוסף.</p>
+                    `,
+                    'free': `
+                        <h3>מה כלול בחינם</h3>
+                        <ul>
+                            <li><strong>בחירת תא:</strong> אפשרות לבחור את מיקום התא שלך באונייה (בכפוף לזמינות).</li>
+                            <li><strong>ארוחות:</strong>
+                                <ul>
+                                    <li><strong>מסעדות ראשיות:</strong> תוכלו ליהנות מארוחות בוקר, צהריים וערב מלאות במסעדות הראשיות של האונייה, כמו Golden Sand ו-Silver Dolphin, המגישות מנות מתפריט עם שירות מלצרים.</li>
+                                    <li><strong>מזנון:</strong> לרשותכם המזנון המרכזי, Marketplace Buffet, הפתוח כמעט 20 שעות ביממה. הוא מציע מגוון רחב של מאכלים בסגנון בופה, כולל פיצות טריות הנאפות במקום, פסטות, סלטים ומנות בינלאומיות מתחלפות.</li>
+                                </ul>
+                            </li>
+                            <li><strong>שירות חדרים:</strong> ארוחת בוקר קונטיננטלית (בסיסית) זמינה בתא שלכם עם משלוח חינם.</li>
+                            <li><strong>גמישות:</strong> אפשרות לבצע שינוי אחד בתאריך או ביעד השייט (בכפוף לתנאים).</li>
+                            <li><strong>בידור ופעילויות:</strong>
+                                <ul>
+                                    <li><strong>מופעים:</strong> הופעות בסגנון ברודוויי בתיאטרון Metropolitan.</li>
+                                    <li><strong>בריכות:</strong> גישה לכל אזורי הבריכה (South Beach, Seaview, Panoramic).</li>
+                                    <li><strong>פארק מים:</strong> שימוש בפארק המים "Forest Aquaventure Park" (למעט אומגה).</li>
+                                    <li><strong>חדר כושר:</strong> גישה לחדר הכושר המאובזר (MSC Gym).</li>
+                                    <li><strong>פעילויות ספורט:</strong> מתקני ספורט באוויר הפתוח (כדורסל, כדורגל, כדורעף) ומסלול ריצה.</li>
+                                    <li><strong>ילדים ונוער:</strong> פעילויות ומועדונים מותאמים לכל הגילאים (Doremi Land).</li>
+                                </ul>
+                            </li>
+                            <li><strong>הנחות:</strong>
+                                <ul>
+                                    <li>50% הנחה על שיעורי כושר פרטיים.</li>
+                                    <li>20% הנחה על חבילות למסעדות מיוחדות בתשלום מראש.</li>
+                                    <li>10% הנחה על טיפולי ספא שנרכשים על האונייה.</li>
+                                </ul>
+                            </li>
+                            <li><strong>נקודות מועדון:</strong> צבירת נקודות למועדון MSC Voyagers Club.</li>
+                            <li><strong>משקאות בסיסיים:</strong> מים (במזנון, בברים נבחרים ובמסעדות ראשיות עם הארוחות) וקפה פילטר/רגיל ותה (במזנון ובמסעדות הראשיות).</li>
+                        </ul>
+                    `,
+                    'paid': `
+                        <h3>מה כלול בתשלום נוסף</h3>
+                        <ul>
+                            <li><strong>משקאות:</strong> כל שאר המשקאות, לרבות קפה מיוחד (כמו אספרסו), מיצים סחוטים טריים, משקאות קלים (כמו קולה), וכל סוגי האלכוהול, אינם כלולים ודורשים תשלום נוסף, אלא אם תרכשו חבילת שתייה ייעודית.</li>
+                            <li><strong>מסעדות מיוחדות (Specialty Restaurants):</strong>
+                                <ul>
+                                    <li>Butcher's Cut: סטייק האוס.</li>
+                                    <li>Ocean Cay Restaurant: מסעדת פירות ים.</li>
+                                    <li>Pan Asian Market Kitchen by Roy Yamaguchi: מסעדה אסייתית (סושי, טפניאקי, פיוז'ן).</li>
+                                    <li>Bistrot La Bohème: ביסטרו צרפתי.</li>
+                                    <li>Venchi 1878 Chocolate Bar: שוקולדים וגלידות.</li>
+                                </ul>
+                            </li>
+                            <li><strong>שירותים בתא:</strong> פריטים מהמיני בר, שיחות טלפון.</li>
+                            <li><strong>אינטרנט:</strong> חיבור Wi-Fi.</li>
+                            <li><strong>ספא:</strong> כניסה לאזור התרמי בספא וטיפולי ספא (למעט הנחה).</li>
+                            <li><strong>אטרקציות מסוימות:</strong> אומגה, באולינג, סימולטור F1, קולנוע XD.</li>
+                            <li><strong>שירותי כביסה.</strong></li>
+                            <li><strong>טיפים לצוות (Service Charges):</strong> תשלום יומי.</li>
+                            <li><strong>טיולים בחוף:</strong> טיולים מאורגנים על ידי MSC ביעדי העצירה.</li>
+                        </ul>
+                    `,
+                    'room_details': `
+                        <h3>פרטי חדר Deluxe Balcony (high deck)</h3>
+                        <p>זהו חדר הממוקם בסיפונים גבוהים יותר ומציע נוחות ונוף לים מהמרפסת הפרטית:</p>
+                        <ul>
+                            <li><strong>מיטות:</strong> בחדר יש מיטה זוגית גדולה שניתנת להפרדה לשתי מיטות יחיד, בנוסף למיטה שלישית שהיא ספה נפתחת או מיטת פולמן (מיטה מתקפלת).</li>
+                            <li><strong>מרפסת:</strong> לחדר יש מרפסת פרטית עם שולחן וכיסאות.</li>
+                            <li><strong>אבזור בחדר:</strong> החדר כולל ארון בגדים, אזור ישיבה קטן, טלוויזיה אינטראקטיבית, טלפון, כספת ומיני בר (בתשלום).</li>
+                            <li><strong>חדר רחצה:</strong> חדר רחצה פרטי עם מקלחת ומייבש שיער.</li>
+                            <li><strong>נוחות:</strong> מיזוג אוויר עם שליטה אישית.</li>
+                        </ul>
+                    `,
+                    'dining': `
+                        <h3>אפשרויות סעודה</h3>
+                        <ul>
+                            <li><strong>מסעדות ראשיות (כלול):</strong> Golden Sand ו-Silver Dolphin - ארוחות בוקר, צהריים וערב מלאות עם שירות מלצרים.</li>
+                            <li><strong>מזנון מרכזי (כלול):</strong> Marketplace Buffet - פתוח כמעט 20 שעות ביממה, מגוון רחב של מאכלים בסגנון בופה, פיצות טריות, פסטות, סלטים ומנות בינלאומיות.</li>
+                            <li><strong>שירות חדרים (ארוחת בוקר קונטיננטלית חינם, שאר התפריט בתשלום).</strong></li>
+                            <li><strong>מסעדות מיוחדות (בתשלום):</strong> Butcher's Cut (סטייק האוס), Ocean Cay Restaurant (פירות ים), Pan Asian Market Kitchen (אסייתית), Bistrot La Bohème (צרפתי).</li>
+                        </ul>
+                    `,
+                    'entertainment': `
+                        <h3>בידור ופעילויות</h3>
+                        <ul>
+                            <li><strong>מופעים:</strong> הופעות בסגנון ברודוויי בתיאטרון Metropolitan (כלול).</li>
+                            <li><strong>בריכות:</strong> גישה לכל אזורי הבריכה (South Beach, Seaview, Panoramic) (כלול).</li>
+                            <li><strong>פארק מים:</strong> שימוש בפארק המים "Forest Aquaventure Park" (למעט אומגה) (כלול).</li>
+                            <li><strong>חדר כושר:</strong> גישה לחדר הכושר המאובזר (MSC Gym) (כלול).</li>
+                            <li><strong>פעילויות ספורט:</strong> מתקני ספורט באוויר הפתוח (כדורסל, כדורגל, כדורעף) ומסלול ריצה (כלול).</li>
+                            <li><strong>ילדים ונוער:</strong> פעילויות ומועדונים מותאמים לכל הגילאים (Doremi Land) (כלול).</li>
+                            <li><strong>אטרקציות בתשלום:</strong> אומגה, באולינג, סימולטור F1, קולנוע XD.</li>
+                        </ul>
+                    `,
+                    'spa_fitness': `
+                        <h3>ספא וכושר</h3>
+                        <ul>
+                            <li><strong>חדר כושר (כלול):</strong> גישה לחדר הכושר המאובזר (MSC Gym).</li>
+                            <li><strong>שיעורי כושר פרטיים:</strong> 50% הנחה.</li>
+                            <li><strong>טיפולי ספא:</strong> 10% הנחה על טיפולים הנרכשים על האונייה.</li>
+                            <li><strong>כניסה לאזור התרמי בספא:</strong> בתשלום נוסף.</li>
+                        </ul>
+                    `,
+                    'internet_communication': `
+                        <h3>אינטרנט ותקשורת</h3>
+                        <ul>
+                            <li><strong>Wi-Fi:</strong> בתשלום נוסף.</li>
+                            <li><strong>שיחות טלפון:</strong> בתשלום נוסף.</li>
+                        </ul>
+                    `
+                }
+            };
+
+            // Helper to format dates
+            const formatDate = (day, month, year, hour = 0, minute = 0) => {
+                const date = new Date(year, month - 1, day, hour, minute);
+                return date;
+            };
+
+            // Messages data
+            const messages = [
+                {
+                    date: formatDate(13, 8, 2025, 6, 0),
+                    text: 'הגיע יום הטיסה 🥳 שתהיה לכולנו חופשה נעימה 🇪🇸',
+                    id: 'flight-day-morning'
+                },
+                {
+                    date: formatDate(13, 8, 2025, 17, 30),
+                    text: 'הגיעה שעת הטיסה 🥳 שתהיה לכולנו חופשה נעימה 🇪🇸',
+                    id: 'flight-time'
+                },
+                {
+                    date: formatDate(13, 8, 2025, 21, 0),
+                    text: 'מזל טוב 🥳 נחתתם בברצלונה - ספרד 🇪🇸',
+                    id: 'landed-barcelona'
+                },
+                {
+                    date: formatDate(16, 8, 2025, 6, 0),
+                    text: 'הגיע יום הקרוז 🚢',
+                    id: 'cruise-day'
+                },
+                // Room specific messages - note the 'room' property
+                {
+                    date: formatDate(16, 8, 2025, 11, 0),
+                    endDate: formatDate(16, 8, 2025, 12, 0),
+                    text: 'שעת העלייה שלכם לאונייה הגיעה 🥳🚢',
+                    id: 'boarding-eli-omer',
+                    room: 2,
+                    orderType: 'ordered'
+                },
+                {
+                    date: formatDate(16, 8, 2025, 12, 0),
+                    endDate: formatDate(16, 8, 2025, 13, 0),
+                    text: 'שעת העלייה שלכם לאונייה הגיעה 🥳🚢',
+                    id: 'boarding-revital-yael-idan-1',
+                    room: 4,
+                    orderType: 'ordered'
+                },
+                {
+                    date: formatDate(16, 8, 2025, 13, 0),
+                    endDate: formatDate(16, 8, 2025, 14, 0),
+                    text: 'שעת העלייה שלכם לאונייה הגיעה 🥳🚢',
+                    id: 'boarding-avi-amit',
+                    room: 1,
+                    orderType: 'ordered'
+                },
+                {
+                    date: formatDate(16, 8, 2025, 14, 0),
+                    endDate: formatDate(16, 8, 2025, 15, 0),
+                    text: 'שעת העלייה שלכם לאונייה הגיעה 🥳🚢',
+                    id: 'boarding-orly-maayan-shir',
+                    room: 3,
+                    orderType: 'ordered'
+                },
+                {
+                    date: formatDate(23, 8, 2025, 6, 0),
+                    text: 'הגיע יום הירידה מהקרוז והטיסה חזרה לארץ. מקווה שנהניתם בחופשה',
+                    id: 'disembark-flight-day'
+                },
+                {
+                    date: formatDate(23, 8, 2025, 8, 0),
+                    text: 'הגיעה שעת הירידה מהקרוז. מקווה שנהניתם',
+                    id: 'disembark-time'
+                },
+                {
+                    date: formatDate(23, 8, 2025, 23, 0),
+                    text: 'הגיעה שעת הטיסה חזרה לארץ. מקווה שנהניתם',
+                    id: 'return-flight-time'
+                },
+                {
+                    date: formatDate(24, 8, 2025, 4, 0),
+                    text: 'נחתתם בארץ. מקווה שנהניתם',
+                    id: 'landed-home'
+                }
+            ];
+
+            // --- Initial Load Sequence ---
+            const showMainContent = () => {
+                loadingScreen.classList.add('hidden');
+                // The main content section already has an animation that kicks in after a delay
+                content.style.opacity = 1;
+                content.style.transform = 'translateY(0)';
+                document.body.style.overflowY = 'auto'; // Enable scrolling
+                initializeSiteFeatures(); // Initialize other features after content is visible
+                checkMessages(); // Check messages immediately after content is shown
+            };
+
+            const showWelcomeScreen = () => {
+                if (localStorage.getItem('welcomeScreenShown') === 'true') {
+                    showMainContent();
+                } else {
+                    welcomeScreen.classList.add('show');
+                    loadingScreen.classList.add('hidden');
+                    document.body.style.overflowY = 'hidden'; // Prevent scrolling on welcome screen
+                    startJourneyButton.addEventListener('click', () => {
+                        welcomeScreen.classList.remove('show');
+                        localStorage.setItem('welcomeScreenShown', 'true');
+                        setTimeout(showMainContent, 500); // Give time for welcome screen to fade out
+                    });
+                }
+            };
+
+            // Simulate loading time
+            setTimeout(showWelcomeScreen, 2000); // Show welcome screen after 2 seconds
+
+            // --- Header scroll effect ---
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    mainHeader.classList.add('collapsed');
+                    content.style.paddingTop = `calc(var(--header-height-collapsed) + var(--padding-base))`;
+                } else {
+                    mainHeader.classList.remove('collapsed');
+                    content.style.paddingTop = `calc(var(--header-height-expanded) + var(--padding-base))`;
+                }
+            });
+
+            // --- Room Selection Logic ---
+            const updateRoomDisplayNames = () => {
+                const today = new Date();
+                const cutoffDate = formatDate(24, 8, 2025, 0, 0);
+
+                let currentRoomNames;
+                if (today < cutoffDate) {
+                    currentRoomNames = roomNamesOrdered;
+                } else {
+                    currentRoomNames = roomNamesArranged;
+                }
+
+                for (const [id, name] of Object.entries(currentRoomNames)) {
+                    const roomNameSpan = document.getElementById(`room-name-${id}`);
+                    if (roomNameSpan) {
+                        roomNameSpan.textContent = name; // Only name, no ID or type
+                    }
+                }
+            };
+
+            const saveSelectedRoom = (roomId) => {
+                selectedRoomId = roomId;
+                localStorage.setItem('selectedRoomId', roomId);
+                localStorage.setItem('isRoomConfirmed', 'true'); // Mark as confirmed
+            };
+
+            const displaySelectedRoom = () => {
+                if (selectedRoomId) {
+                    const today = new Date();
+                    const cutoffDate = formatDate(24, 8, 2025, 0, 0);
+                    const currentRoomNames = today < cutoffDate ? roomNamesOrdered : roomNamesArranged;
+                    selectedRoomDisplay.textContent = currentRoomNames[selectedRoomId];
+
+                    // Update entitlements section header
+                    entitlementsRoomNameDisplay.textContent = `סוג חדר: ${currentRoomNames[selectedRoomId]}`;
+
+                    // Set 'selected' class
+                    roomButtons.forEach(button => {
+                        if (button.dataset.roomId === selectedRoomId) {
+                            button.classList.add('selected');
+                        } else {
+                            button.classList.remove('selected');
+                        }
+                    });
+
+                    if (isRoomConfirmed) {
+                        roomButtons.forEach(button => {
+                            button.disabled = true;
+                            button.style.cursor = 'not-allowed';
+                        });
+                        confirmRoomSelectionButton.disabled = true;
+                        confirmRoomSelectionButton.textContent = 'החדר נבחר';
+                        roomSelectionInstruction.style.display = 'none'; // Hide instruction
+                        roomSelectionSection.classList.add('selected-final'); // Add class to hide buttons later
+                        // Hide all room selection buttons after confirmation
+                        roomSelectionButtonsContainer.style.display = 'none';
+                        confirmRoomSelectionButton.style.display = 'none';
+                        roomSelectionTitle.style.display = 'none'; // Hide title
+                        document.getElementById('selected-room-display').style.marginTop = '0'; // Adjust spacing
+                    } else {
+                        confirmRoomSelectionButton.disabled = !selectedRoomId; // Enable confirm only if a room is selected
+                    }
+                }
+            };
+
+            let tempSelectedRoomId = null; // Temporary selection before confirmation
+
+            roomButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    if (isRoomConfirmed) return; // Prevent selection if already confirmed
+
+                    roomButtons.forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    tempSelectedRoomId = button.dataset.roomId;
+                    confirmRoomSelectionButton.disabled = false; // Enable confirm button
+
+                    const today = new Date();
+                    const cutoffDate = formatDate(24, 8, 2025, 0, 0);
+                    const currentRoomNames = today < cutoffDate ? roomNamesOrdered : roomNamesArranged;
+                    selectedRoomDisplay.textContent = currentRoomNames[tempSelectedRoomId];
+
+
+                    // Ripple effect
+                    const x = e.clientX - e.target.offsetLeft;
+                    const y = e.clientY - e.target.offsetTop;
+                    const ripple = document.createElement('span');
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    button.appendChild(ripple);
+                    ripple.addEventListener('animationend', () => ripple.remove());
+                });
+            });
+
+            confirmRoomSelectionButton.addEventListener('click', () => {
+                if (tempSelectedRoomId && !isRoomConfirmed) {
+                    saveSelectedRoom(tempSelectedRoomId);
+                    isRoomConfirmed = true; // Update flag
+                    displaySelectedRoom();
+                    alert(`החדר ${selectedRoomDisplay.textContent} נבחר ואושר בהצלחה!`);
+                    // Smooth scroll to main menu after confirmation
+                    document.getElementById('main-menu').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+
+            updateRoomDisplayNames();
+            displaySelectedRoom(); // Initial display based on saved or default state
+
+            // Show room selection or main menu based on confirmation
+            if (isRoomConfirmed) {
+                roomSelectionSection.classList.add('visible-section'); // Keep room selection visible
+                roomSelectionSection.classList.remove('hidden-section'); // Make sure it's visible if confirmed
+                document.getElementById('main-menu').classList.remove('hidden-section');
+                document.getElementById('main-menu').classList.add('visible-section');
+            } else {
+                roomSelectionSection.classList.remove('hidden-section'); // Ensure room selection is visible for first choice
+            }
+
+            // --- Message Popups Logic ---
+            const showPopup = (messageText, messageId) => {
+                if (popupMessage.classList.contains('show')) { // Don't show multiple popups at once
+                    return;
+                }
+                popupText.innerHTML = messageText;
+                popupText.dataset.messageId = messageId;
+                popupMessage.classList.add('show');
+                localStorage.setItem(`popupShown_${messageId}`, 'true');
+            };
+
+            closePopup.addEventListener('click', () => {
+                popupMessage.classList.remove('show');
+                setTimeout(() => popupMessage.style.display = 'none', 300);
+            });
+
+            const checkMessages = () => {
+                const now = new Date();
+                const currentSelectedRoomId = getSelectedRoom(); // Use the stored selected room ID
+
+                messages.forEach(msg => {
+                    if (localStorage.getItem(`popupShown_${msg.id}`)) {
+                        return;
+                    }
+
+                    const messageDate = msg.date;
+                    const messageEndDate = msg.endDate || new Date(Infinity, 0, 1);
+
+                    if (now >= messageDate && now < messageEndDate) {
+                        if (msg.room && msg.orderType) {
+                            // Determine current room name based on date for comparison
+                            const today = new Date();
+                            const cutoffDate = formatDate(24, 8, 2025, 0, 0);
+                            const currentRoomNamesForCheck = today < cutoffDate ? roomNamesOrdered : roomNamesArranged;
+
+                            const selectedRoomName = currentRoomNamesForCheck[currentSelectedRoomId];
+                            const msgRoomName = (msg.orderType === 'ordered' ? roomNamesOrdered : roomNamesArranged)[msg.room];
+
+                            if (currentSelectedRoomId == msg.room && selectedRoomName === msgRoomName) {
+                                showPopup(msg.text, msg.id);
+                            }
+                        } else if (!msg.room) {
+                            showPopup(msg.text, msg.id);
+                        }
+                    } else if (now >= messageEndDate && msg.endDate) {
+                        localStorage.setItem(`popupShown_${msg.id}`, 'true');
+                    }
+                });
+            };
+
+            // --- Menu Navigation Logic ---
+            const showSection = (sectionId) => {
+                sections.forEach(section => {
+                    section.classList.remove('visible-section');
+                    section.classList.add('hidden-section');
+                });
+                const targetSection = document.getElementById(`${sectionId}-section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden-section');
+                    targetSection.classList.add('visible-section');
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to section
+                }
+
+                if (sectionId === 'entitlements') {
+                    loadEntitlementsContent();
+                }
+                updateNavDotsActiveState();
+            };
+
+            menuButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const sectionId = button.dataset.section;
+                    showSection(sectionId);
+                    // Ripple effect
+                    const x = e.clientX - e.target.offsetLeft;
+                    const y = e.clientY - e.target.offsetTop;
+                    const ripple = document.createElement('span');
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    button.appendChild(ripple);
+                    ripple.addEventListener('animationend', () => ripple.remove());
+                });
+            });
+
+            // --- Entitlements Content Logic ---
+            const loadEntitlementsContent = () => {
+                const currentSelectedRoomId = getSelectedRoom();
+                if (!currentSelectedRoomId) {
+                    entitlementsContent.innerHTML = '<p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: var(--light-text-color);">אנא בחר חדר תחילה כדי לראות את הזכאויות הרלוונטיות.</p>';
+                    entitlementsFilterButtonsContainer.innerHTML = '';
+                    entitlementsRoomNameDisplay.textContent = 'סוג חדר: טרם נבחר';
+                    return;
+                }
+
+                const roomType = roomTypeMapping[currentSelectedRoomId]; // Get internal room type
+                const roomName = (new Date() < formatDate(24, 8, 2025, 0, 0) ? roomNamesOrdered : roomNamesArranged)[currentSelectedRoomId];
+
+                entitlementsRoomNameDisplay.textContent = `חדר: ${roomName}`;
+                const data = entitlementsData[roomType];
+
+                // Generate filter buttons for entitlements
+                entitlementsFilterButtonsContainer.innerHTML = `
+                    <button data-topic="overview">סקירה כללית</button>
+                    <button data-topic="free">מה כלול בחינם</button>
+                    <button data-topic="paid">מה כלול בתשלום נוסף</button>
+                    <button data-topic="room_details">פרטי החדר</button>
+                    <button data-topic="dining">אפשרויות סעודה</button>
+                    <button data-topic="entertainment">בידור ופעילויות</button>
+                    <button data-topic="spa_fitness">ספא וכושר</button>
+                    <button data-topic="internet_communication">אינטרנט ותקשורת</button>
+                `;
+
+                entitlementsContent.innerHTML = data['overview']; // Default to showing overview
+
+                entitlementsFilterButtonsContainer.querySelectorAll('button').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const topic = event.target.dataset.topic;
+                        entitlementsContent.innerHTML = data[topic];
+                        entitlementsContent.querySelectorAll('li').forEach((li, index) => {
+                            li.style.animationDelay = `${index * 0.05}s`;
+                            li.style.opacity = 0;
+                            li.style.transform = 'translateX(-15px)';
+                            void li.offsetWidth;
+                            li.style.animation = '';
+                            li.style.animation = `listItemFadeIn 0.5s forwards ${index * 0.05}s ease-in-out`;
+                        });
+                        // Ripple effect
+                        const x = event.clientX - event.target.offsetLeft;
+                        const y = event.clientY - event.target.offsetTop;
+                        const ripple = document.createElement('span');
+                        ripple.style.left = x + 'px';
+                        ripple.style.top = y + 'px';
+                        ripple.classList.add('ripple');
+                        event.target.appendChild(ripple);
+                        ripple.addEventListener('animationend', () => ripple.remove());
+                    });
+                });
+            };
+
+            // --- Entrance Tickets Logic ---
+            const checkEntranceTicketsVisibility = () => {
+                const now = new Date();
+                const activationDate = formatDate(15, 8, 2025, 15, 0);
+
+                if (now >= activationDate) {
+                    entranceTicketsButton.style.display = 'flex'; // Use flex for centering if needed
+                } else {
+                    entranceTicketsButton.style.display = 'none';
+                }
+            };
+
+            launchAppButton.addEventListener('click', (e) => {
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                let appStoreLink = '';
+                const appScheme = 'msccruisesfor.me://';
+
+                window.location.href = appScheme;
+
+                setTimeout(() => {
+                    if (/android/i.test(userAgent)) {
+                        appStoreLink = 'https://play.google.com/store/apps/details?id=com.msccruises.for.me';
+                    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                        appStoreLink = 'https://apps.apple.com/us/app/msc-for-me/id1290357778';
+                    } else {
+                        alert('אנא חפש את "MSC for Me" בחנות האפליקציות שלך.');
+                        return;
+                    }
+
+                    if (appStoreLink) {
+                        window.open(appStoreLink, '_blank');
+                    }
+                }, 500);
+
+                // Ripple effect
+                const x = e.clientX - e.target.offsetLeft;
+                const y = e.clientY - e.target.offsetTop;
+                const ripple = document.createElement('span');
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                e.target.appendChild(ripple);
+                ripple.addEventListener('animationend', () => ripple.remove());
+            });
+
+            // --- Scroll to Top Button Logic ---
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) { // Show button after scrolling 300px
+                    scrollToTopButton.classList.add('show');
+                } else {
+                    scrollToTopButton.classList.remove('show');
+                }
+                updateNavDotsActiveState();
+            });
+
+            scrollToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // --- Navigation Dots Logic ---
+            const generateNavDots = () => {
+                navDotsContainer.innerHTML = ''; // Clear existing dots
+                mainSections.forEach((section, index) => {
+                    const dot = document.createElement('div');
+                    dot.classList.add('nav-dot');
+                    dot.dataset.sectionId = section.id;
+                    const tooltip = document.createElement('span');
+                    tooltip.classList.add('tooltip');
+                    let sectionName = '';
+                    if (section.id === 'room-selection') {
+                        sectionName = 'בחירת חדר';
+                    } else if (section.id === 'main-menu') {
+                        sectionName = 'תפריט ראשי';
+                    } else if (section.id === 'entitlements-section') {
+                        sectionName = 'זכאויות';
+                    } else if (section.id === 'room-map-section') {
+                        sectionName = 'מפת החדר';
+                    } else if (section.id === 'tour-360-section') {
+                        sectionName = 'סיור 360';
+                    } else if (section.id === 'entrance-tickets-section') {
+                        sectionName = 'כרטיסי כניסה';
+                    }
+                    tooltip.textContent = sectionName;
+                    dot.appendChild(tooltip);
+
+                    dot.addEventListener('click', () => {
+                        const targetSection = document.getElementById(section.id);
+                        if (targetSection) {
+                            targetSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                    navDotsContainer.appendChild(dot);
+                });
+                if (mainSections.length > 1) { // Only show if there's more than one section to navigate
+                    navDotsContainer.classList.add('show');
+                }
+            };
+
+            const updateNavDotsActiveState = () => {
+                const currentScrollPos = window.scrollY;
+                let activeSectionId = '';
+
+                // Find the section currently in view
+                for (let i = mainSections.length - 1; i >= 0; i--) {
+                    const section = mainSections[i];
+                    const rect = section.getBoundingClientRect();
+                    // Check if the top of the section is within the viewport, with a small offset
+                    if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+                        activeSectionId = section.id;
+                        break;
+                    }
+                }
+
+                document.querySelectorAll('.nav-dot').forEach(dot => {
+                    if (dot.dataset.sectionId === activeSectionId) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            };
+
+            // Call this function once all sections might be loaded/visible
+            const initializeSiteFeatures = () => {
+                 checkEntranceTicketsVisibility();
+                 setInterval(checkEntranceTicketsVisibility, 60000); // Check every minute
+                 generateNavDots();
+                 updateNavDotsActiveState();
+                 window.addEventListener('scroll', updateNavDotsActiveState); // Update active dot on scroll
+            };
+        });
+    </script>
+</body>
+</html>
