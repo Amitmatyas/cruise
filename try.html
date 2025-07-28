@@ -7,7 +7,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚢</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -187,22 +186,25 @@
             height: auto;
         }
 
+        /* Wave animations */
         .wave {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 100px; /* Base height */
+            height: 0; /* Start with 0 height */
             background: rgba(255, 255, 255, 0.2);
-            animation: wave-animation 3s infinite linear;
+            background-repeat: repeat-x;
+            background-size: 200px 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><path fill="%23fff" d="M0,50 C50,0 150,100 200,50 L200,100 L0,100 Z"/></svg>');
             transform: translateY(100%);
             opacity: 0;
-            animation: wave-entry 1s ease-out forwards;
-            animation-delay: 1s;
+            animation-fill-mode: forwards;
+            /* Animation properties for waves */
         }
 
-        .wave.wave1 { animation-delay: 1s; z-index: 10; height: 120px; background: rgba(255, 255, 255, 0.3); }
-        .wave.wave2 { animation-delay: 1.2s; z-index: 20; height: 100px; background: rgba(255, 255, 255, 0.2); }
-        .wave.wave3 { animation-delay: 1.4s; z-index: 30; height: 80px; background: rgba(255, 255, 255, 0.1); }
+        .wave.wave1 { z-index: 10; background: rgba(255, 255, 255, 0.3); animation: wave-enter 2s forwards ease-out, wave-horizontal 2s 2s linear infinite, wave-wash 2s 4s forwards ease-in; }
+        .wave.wave2 { z-index: 20; background: rgba(255, 255, 255, 0.2); animation: wave-enter 2s 0.2s forwards ease-out, wave-horizontal 2s 2.2s linear infinite, wave-wash 2s 4.2s forwards ease-in; }
+        .wave.wave3 { z-index: 30; background: rgba(255, 255, 255, 0.1); animation: wave-enter 2s 0.4s forwards ease-out, wave-horizontal 2s 2.4s linear infinite, wave-wash 2s 4.4s forwards ease-in; }
 
 
         @keyframes fadeIn {
@@ -210,19 +212,19 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes wave-entry {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0%); opacity: 1; }
+        @keyframes wave-enter {
+            0% { transform: translateY(100%); height: 0; opacity: 0; }
+            100% { transform: translateY(0%); height: 120px; opacity: 1; }
         }
 
-        @keyframes wave-animation {
+        @keyframes wave-horizontal {
             0% { background-position: 0 0; }
-            100% { background-position: 200px 0; } /* Adjust based on wave shape */
+            100% { background-position: 200px 0; }
         }
-        .wave {
-            background-repeat: repeat-x;
-            background-size: 200px 100%; /* Adjust wave length/height */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><path fill="%23fff" d="M0,50 C50,0 150,100 200,50 L200,100 L0,100 Z"/></svg>'); /* Simple wave SVG */
+
+        @keyframes wave-wash {
+            0% { transform: translateY(0%); height: 120px; opacity: 1; }
+            100% { transform: translateY(-100%); height: 100vh; opacity: 1; } /* Cover whole screen and move up */
         }
 
 
@@ -1119,7 +1121,6 @@
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loading-logo-container">
             <img src="https://logos-world.net/wp-content/uploads/2022/09/MSC-Cruise-Logo.png" alt="MSC Cruise Logo" class="loading-logo">
@@ -1129,7 +1130,6 @@
         <div class="wave wave3"></div>
     </div>
 
-    <!-- Welcome Screen -->
     <div id="welcome-screen">
         <h1>ברוכים הבאים לטיול בר המצווה של עמית ועומר!</h1>
         <p>באתר זה יהיה לכם כאן את כל הפרטים שאתם צריכים לחופשה בלתי נשכחת.</p>
@@ -1138,8 +1138,7 @@
 
     <header id="main-header">
         <div class="logo-container">
-            <a href="#home"> <!-- Logo links to home -->
-                <img src="https://logos-world.net/wp-content/uploads/2022/09/MSC-Cruise-Logo.png" alt="MSC Cruise Logo" class="logo">
+            <a href="#home"> <img src="https://logos-world.net/wp-content/uploads/2022/09/MSC-Cruise-Logo.png" alt="MSC Cruise Logo" class="logo">
             </a>
         </div>
     </header>
@@ -1202,18 +1201,15 @@
                 <p>חבילה: Fantastica</p>
             </div>
             <div class="entitlements-filter-buttons" id="entitlements-filter-buttons">
-                <!-- Buttons will be generated by JavaScript -->
-            </div>
+                </div>
             <div id="entitlements-content">
-                <!-- Content will be displayed by JavaScript -->
-            </div>
+                </div>
         </section>
 
         <section id="room-map-section" class="hidden-section">
             <h2>מפת החדר</h2>
             <div class="room-map-content">
                 <p>מקום לתמונות וסרטון. (הקישורים לקבצים יהיו משרת)</p>
-                <!-- REPLACE WITH YOUR IMAGE/VIDEO LINKS -->
                 <img src="https://via.placeholder.com/600x400?text=Room+Image+1" alt="תמונה של החדר 1">
                 <img src="https://via.placeholder.com/600x400?text=Room+Image+2" alt="תמונה של החדר 2">
                 <video controls>
@@ -1237,7 +1233,6 @@
         </section>
     </main>
 
-    <!-- Admin Panel -->
     <div id="admin-panel">
         <div id="admin-login">
             <h2>כניסת מנהל</h2>
@@ -1252,8 +1247,7 @@
             <div class="admin-section">
                 <h3>ניהול אירועים מתוזמנים (למונה)</h3>
                 <ul id="event-list" class="event-list">
-                    <!-- Events will be loaded here -->
-                </ul>
+                    </ul>
             </div>
 
             <div class="admin-section">
@@ -1299,19 +1293,15 @@
             <div class="admin-section">
                 <h3>התראות קיימות</h3>
                 <ul id="alert-list" class="alert-list">
-                    <!-- Alerts will be loaded here -->
-                </ul>
+                    </ul>
             </div>
         </div>
     </div>
 
-    <!-- Scroll to Top Button -->
     <button id="scroll-to-top" title="חזור למעלה">↑</button>
 
-    <!-- Navigation Dots -->
     <div id="nav-dots">
-        <!-- Dots will be generated by JS -->
-    </div>
+        </div>
 
     <script>
         // Ensure Firebase objects are available globally after initialization
@@ -1717,8 +1707,31 @@
                 });
             };
 
-            // Simulate loading time for visual effect
-            setTimeout(showWelcomeScreen, 2000);
+            // Custom loading animation logic
+            const runLoadingAnimation = () => {
+                const wave1 = document.querySelector('.wave1');
+                const wave2 = document.querySelector('.wave2');
+                const wave3 = document.querySelector('.wave3');
+
+                // Sequence: Logo FadeIn (0.5s), Wave Enter (2s), Wave Horizontal (2s), Wave Wash (2s)
+                // Total animation duration before content appears: 0.5 + 2 + 2 + 2 = 6.5s
+                // Adjust this total duration based on actual animation times
+
+                // After waves finish washing, hide loading screen and show welcome/main content
+                // We'll use the longest animation duration for the loading screen fade out
+                // The 'wave-wash' animation for wave1 ends at 4s + 2s = 6s.
+                // The loading screen transition is 1s. So, total 7s.
+                // We also have a 0.5s delay for logo fadeIn
+                const totalLoadingTime = 6500; // 6.5 seconds
+
+                setTimeout(() => {
+                    showWelcomeScreen();
+                }, totalLoadingTime);
+            };
+
+            // Start the loading animation on page load
+            runLoadingAnimation();
+
 
             // --- Header scroll effect ---
             window.addEventListener('scroll', () => {
@@ -2450,7 +2463,7 @@
                         eventItem.querySelector('.save-btn').onclick = async () => {
                             const updatedName = eventItem.querySelector('[data-field="name"]').value;
                             const updatedTimestamp = new Date(eventItem.querySelector('[data-field="timestamp"]').value).getTime();
-                            const updatedRoomId = eventItem.querySelector('[data-field="room_id"]').value || null;
+                            const updatedRoomId = eventItem.querySelector('[data-field="room-id"]').value || null;
                             const updatedIsActive = eventItem.querySelector('[data-field="is_active"]').checked;
 
                             try {
